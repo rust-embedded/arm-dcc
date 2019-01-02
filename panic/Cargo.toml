@@ -1,0 +1,16 @@
+[package]
+authors = ["Jorge Aparicio <jorge@japaric.io>"]
+categories = ["embedded", "hardware-support", "no-std"]
+description = "Report panic messages to the host using the Debug Communication Channel (DCC)"
+edition = "2018"
+keywords = ["ARM", "DCC", "panic-handler"]
+license = "MIT OR Apache-2.0"
+name = "panic-dcc"
+repository = "https://github.com/japaric/dcc"
+version = "0.1.0"
+
+[dependencies]
+dcc = { path = "..", version = "0.1.0" }
+
+[features]
+inline-asm = ["dcc/inline-asm"]

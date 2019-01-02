@@ -1,0 +1,18 @@
+[package]
+authors = ["Jorge Aparicio <jorge@japaric.io>"]
+categories = ["embedded", "hardware-support", "no-std"]
+description = "Debug Communication Channel (DCC) API"
+edition = "2018"
+keywords = ["ARM", "DCC"]
+license = "MIT OR Apache-2.0"
+name = "dcc"
+repository = "https://github.com/japaric/dcc"
+version = "0.1.0"
+
+[dependencies]
+
+[features]
+inline-asm = []
+
+[workspace]
+members = ["panic"]
