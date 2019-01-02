@@ -20,26 +20,26 @@
 //! $ # XSDB = Xilinx System Debugger
 //! $ xsdb
 //!
-//! (xsdb) # connect
-//! (xsdb) conn
+//! xsdb% # connect
+//! xsdb% conn
 //!
-//! (xsdb) # select a Cortex-R core
-//! (xsdb) targets -set 0
+//! xsdb% # select a Cortex-R core
+//! xsdb% targets -set 0
 //!
-//! (xsdb) # hold the processor in reset state
-//! (xsdb) rst -processor
+//! xsdb% # hold the processor in reset state
+//! xsdb% rst -processor
 //!
-//! (xsdb) # load program
-//! (xsdb) dow hello.elf
+//! xsdb% # load program
+//! xsdb% dow hello.elf
 //!
-//! (xsdb) # open a file
-//! (xsdb) set f [open dcc.log w]
+//! xsdb% # open a file
+//! xsdb% set f [open dcc.log w]
 //!
-//! (xsdb) # redirect DCC output to file handle `f`
-//! (xsdb) readjtaguart -start -handle $f
+//! xsdb% # redirect DCC output to file handle `f`
+//! xsdb% readjtaguart -start -handle $f
 //!
-//! (xsdb) # start program execution
-//! (xsdb) con
+//! xsdb% # start program execution
+//! xsdb% con
 //! ```
 //!
 //! ``` text
