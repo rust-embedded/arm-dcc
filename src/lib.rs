@@ -111,39 +111,39 @@ impl fmt::Write for Writer {
 }
 
 /// Writes a single word to the DCC
+///
+/// **NOTE:** This operation is blocking
 #[allow(unused_variables)]
-#[cfg(not(target_arch = "arm"))]
-pub fn write(word: u32) {
-    unimplemented!()
-}
-
-/// Writes a single word to the DCC
-#[cfg(all(target_arch = "arm", feature = "inline-asm"))]
-pub fn write(word: u32) {
-    const W: u32 = 1 << 29;
-
-    unsafe {
-        let mut r: u32;
-        loop {
-            // busy wait until we can send data
-            asm!("MRC p14, 0, $0, c0, c1, 0" : "=r"(r) : : : "volatile");
-            if r & W == 0 {
-                break;
-            }
-        }
-        asm!("MCR p14, 0, $0, c0, c5, 0" : : "r"(word) : : "volatile");
-    }
-}
-
-/// Writes a single word to the DCC
-#[cfg(all(target_arch = "arm", not(feature = "inline-asm")))]
 #[inline(always)]
 pub fn write(word: u32) {
-    extern "C" {
-        fn __dcc_write(word: u32);
-    }
+    match () {
+        #[cfg(not(target_arch = "arm"))]
+        () => unimplemented!(),
+        #[cfg(all(target_arch = "arm", feature = "inline-asm"))]
+        () => {
+            const W: u32 = 1 << 29;
 
-    unsafe { __dcc_write(word) }
+            unsafe {
+                let mut r: u32;
+                loop {
+                    // busy wait until we can send data
+                    asm!("MRC p14, 0, $0, c0, c1, 0" : "=r"(r) : : : "volatile");
+                    if r & W == 0 {
+                        break;
+                    }
+                }
+                asm!("MCR p14, 0, $0, c0, c5, 0" : : "r"(word) : : "volatile");
+            }
+        }
+        #[cfg(all(target_arch = "arm", not(feature = "inline-asm")))]
+        () => {
+            extern "C" {
+                fn __dcc_write(word: u32);
+            }
+
+            unsafe { __dcc_write(word) }
+        }
+    }
 }
 
 /// Writes the bytes to the DCC
