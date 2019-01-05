@@ -57,6 +57,12 @@
 //!
 //! # Optional features
 //!
+//! ## `nop`
+//!
+//! Turns `dcc::write` into a "no-operation" (not the instruction). This is useful when the DCC is
+//! disabled as `dcc::write` blocks forever in that case. This feature has precedence over the
+//! `inline-asm` feature.
+//!
 //! ## `inline-asm`
 //!
 //! When this feature is enabled `dcc::write` is implemented using inline assembly (`asm!`) and
@@ -119,7 +125,9 @@ pub fn write(word: u32) {
     match () {
         #[cfg(not(target_arch = "arm"))]
         () => unimplemented!(),
-        #[cfg(all(target_arch = "arm", feature = "inline-asm"))]
+        #[cfg(all(target_arch = "arm", feature = "nop"))]
+        () => {}
+        #[cfg(all(target_arch = "arm", not(feature = "nop"), feature = "inline-asm"))]
         () => {
             const W: u32 = 1 << 29;
 
@@ -135,7 +143,7 @@ pub fn write(word: u32) {
                 asm!("MCR p14, 0, $0, c0, c5, 0" : : "r"(word) : : "volatile");
             }
         }
-        #[cfg(all(target_arch = "arm", not(feature = "inline-asm")))]
+        #[cfg(all(target_arch = "arm", not(feature = "nop"), not(feature = "inline-asm")))]
         () => {
             extern "C" {
                 fn __dcc_write(word: u32);
