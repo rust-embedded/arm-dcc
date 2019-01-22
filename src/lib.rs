@@ -7,7 +7,7 @@
 //! ## Device side
 //!
 //! ``` no_run
-//! use dcc::dprintln;
+//! use arm_dcc::dprintln;
 //!
 //! fn main() {
 //!     dprintln!("Hello, world!");
