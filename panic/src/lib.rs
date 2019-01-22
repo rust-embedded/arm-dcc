@@ -73,7 +73,7 @@
 use core::sync::atomic::{self, Ordering};
 use core::{fmt::Write, panic::PanicInfo};
 
-use dcc::Writer;
+use arm_dcc::Writer;
 
 #[panic_handler]
 fn panic(info: &PanicInfo) -> ! {
