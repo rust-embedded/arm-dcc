@@ -2,7 +2,7 @@
 
 > [Debug Communication Channel][dcc] (DCC) API
 
-[dcc]: https://developer.arm.com/products/software-development-tools/compilers/arm-compiler-5/docs/dui0471/latest/debug-communications-channel
+[dcc]: https://developer.arm.com/docs/dui0471/latest/debug-communications-channel
 
 This project is developed and maintained by the [Cortex-R team][team].
 
