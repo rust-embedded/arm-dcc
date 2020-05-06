@@ -57,7 +57,7 @@
 //!
 //! ## `inline-asm`
 //!
-//! When this feature is enabled `dcc::write` is implemented using inline assembly (`asm!`) and
+//! When this feature is enabled `dcc::write` is implemented using inline assembly (`llvm_asm!`) and
 //! compiling this crate requires nightly. Note that this feature requires that the compilation
 //! target is one of the 4 ARMv7 Cortex-R targets.
 //!
