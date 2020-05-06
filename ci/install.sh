@@ -1,6 +1,10 @@
 set -euxo pipefail
 
 main() {
+    if [ $TARGET = x86_64-unknown-linux-gnu ]; then
+        rustup component add rustfmt
+    fi
+
     case $TARGET in
         arm*v7r-none-eabi*)
             rustup target add $TARGET
