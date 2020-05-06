@@ -1,6 +1,10 @@
 set -euxo pipefail
 
 main() {
+    if [ $TARGET = x86_64-unknown-linux-gnu ]; then
+        cargo fmt --all -- --check
+    fi
+
     cargo check --target $TARGET
     cargo check --features nop --target $TARGET
 
