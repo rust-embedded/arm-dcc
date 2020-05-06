@@ -65,16 +65,15 @@
 //!
 //! ## `inline-asm`
 //!
-//! When this feature is enabled `dcc::write` is implemented using inline assembly (`asm!`) and
+//! When this feature is enabled `dcc::write` is implemented using inline assembly (`llvm_asm!`) and
 //! compiling this crate requires nightly. Note that this feature requires that the compilation
 //! target is one of the 4 ARMv7 Cortex-R targets.
 //!
 //! When this feature is disabled `dcc::write` is implemented using FFI calls into an external
 //! assembly file and compiling this crate works on stable and beta.
 
-#![cfg_attr(feature = "inline-asm", feature(asm))]
+#![cfg_attr(feature = "inline-asm", feature(llvm_asm))]
 #![deny(missing_docs)]
-#![deny(warnings)]
 #![no_std]
 
 use core::fmt;
@@ -135,12 +134,12 @@ pub fn write(word: u32) {
                 let mut r: u32;
                 loop {
                     // busy wait until we can send data
-                    asm!("MRC p14, 0, $0, c0, c1, 0" : "=r"(r) : : : "volatile");
+                    llvm_asm!("MRC p14, 0, $0, c0, c1, 0" : "=r"(r) : : : "volatile");
                     if r & W == 0 {
                         break;
                     }
                 }
-                asm!("MCR p14, 0, $0, c0, c5, 0" : : "r"(word) : : "volatile");
+                llvm_asm!("MCR p14, 0, $0, c0, c5, 0" : : "r"(word) : : "volatile");
             }
         }
         #[cfg(all(target_arch = "arm", not(feature = "nop"), not(feature = "inline-asm")))]
