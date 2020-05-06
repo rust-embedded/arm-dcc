@@ -74,7 +74,6 @@
 
 #![cfg_attr(feature = "inline-asm", feature(llvm_asm))]
 #![deny(missing_docs)]
-#![deny(warnings)]
 #![no_std]
 
 use core::fmt;
