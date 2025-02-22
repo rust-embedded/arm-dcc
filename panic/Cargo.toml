@@ -10,10 +10,8 @@ keywords = ["ARM", "DCC", "panic-handler"]
 license = "MIT OR Apache-2.0"
 name = "panic-dcc"
 repository = "https://github.com/rust-embedded/arm-dcc"
+rust-version = "1.59"
 version = "0.1.0"
 
 [dependencies]
 arm-dcc = { path = "..", version = "0.1.0" }
-
-[features]
-inline-asm = ["arm-dcc/inline-asm"]

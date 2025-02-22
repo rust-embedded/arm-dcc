@@ -50,29 +50,15 @@
 //!
 //! # Supported Rust version
 //!
-//! - Rust >=1.31 when the target is one of the 4 ARMv7 Cortex-R targets.
-//!
-//! - All the other ARM targets require enabling the `inline-asm`, which requires a nightly
-//! compiler.
+//! - Rust >=1.59
 //!
 //! # Optional features
 //!
 //! ## `nop`
 //!
 //! Turns `dcc::write` into a "no-operation" (not the instruction). This is useful when the DCC is
-//! disabled as `dcc::write` blocks forever in that case. This feature has precedence over the
-//! `inline-asm` feature.
-//!
-//! ## `inline-asm`
-//!
-//! When this feature is enabled `dcc::write` is implemented using inline assembly (`llvm_asm!`) and
-//! compiling this crate requires nightly. Note that this feature requires that the compilation
-//! target is one of the 4 ARMv7 Cortex-R targets.
-//!
-//! When this feature is disabled `dcc::write` is implemented using FFI calls into an external
-//! assembly file and compiling this crate works on stable and beta.
+//! disabled as `dcc::write` blocks forever in that case.
 
-#![cfg_attr(feature = "inline-asm", feature(llvm_asm))]
 #![deny(missing_docs)]
 #![no_std]
 
@@ -126,7 +112,7 @@ pub fn write(word: u32) {
         () => unimplemented!(),
         #[cfg(all(target_arch = "arm", feature = "nop"))]
         () => {}
-        #[cfg(all(target_arch = "arm", not(feature = "nop"), feature = "inline-asm"))]
+        #[cfg(all(target_arch = "arm", not(feature = "nop")))]
         () => {
             const W: u32 = 1 << 29;
 
@@ -134,21 +120,13 @@ pub fn write(word: u32) {
                 let mut r: u32;
                 loop {
                     // busy wait until we can send data
-                    llvm_asm!("MRC p14, 0, $0, c0, c1, 0" : "=r"(r) : : : "volatile");
+                    core::arch::asm!("MRC p14, 0, {}, c0, c1, 0", out(reg) r);
                     if r & W == 0 {
                         break;
                     }
                 }
-                llvm_asm!("MCR p14, 0, $0, c0, c5, 0" : : "r"(word) : : "volatile");
+                core::arch::asm!("MCR p14, 0, {}, c0, c5, 0", in(reg) word);
             }
-        }
-        #[cfg(all(target_arch = "arm", not(feature = "nop"), not(feature = "inline-asm")))]
-        () => {
-            extern "C" {
-                fn __dcc_write(word: u32);
-            }
-
-            unsafe { __dcc_write(word) }
         }
     }
 }
@@ -171,3 +149,17 @@ pub fn write_fmt(args: fmt::Arguments) {
 pub fn write_str(string: &str) {
     write_all(string.as_bytes())
 }
+
+core::arch::global_asm!(
+    r#"
+    // Routine for putting data in the DCC register
+    .section .text.__dcc_write
+    .global __dcc_write
+__dcc_write:
+1:  mrc     p14, 0, r1, c0, c1, 0
+    tst     r1, #536870912      /* 0x20000000 */
+    bne     1b
+    mcr     p14, 0, r0, c0, c5, 0
+    bx      lr
+    "#
+);

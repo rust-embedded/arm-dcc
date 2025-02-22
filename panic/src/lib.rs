@@ -48,21 +48,7 @@
 //!
 //! # Supported Rust version
 //!
-//! - Rust >=1.31 when the target is one of the 4 ARMv7 Cortex-R targets.
-//!
-//! - All the other ARM targets require enabling the `inline-asm`, which requires a nightly
-//! compiler.
-//!
-//! # Optional features
-//!
-//! ## `inline-asm`
-//!
-//! When this feature is enabled `dcc::write` is implemented using inline assembly (`llvm_asm!`) and
-//! compiling this crate requires nightly. Note that this feature requires that the compilation
-//! target is one of the 4 ARMv7 Cortex-R targets.
-//!
-//! When this feature is disabled `dcc::write` is implemented using FFI calls into an external
-//! assembly file and compiling this crate works on stable and beta.
+//! - Rust >=1.59
 
 #![deny(missing_docs)]
 #![deny(warnings)]
@@ -84,9 +70,6 @@ fn panic(info: &PanicInfo) -> ! {
     writeln!(Writer, "{}", info).ok();
 
     loop {
-        // NOTE the compiler_fence prevents this loop from turning into an abort instruction when
-        // this crate is compiled with optimizations
-        #[cfg(not(debug_assertions))]
-        atomic::compiler_fence(Ordering::SeqCst)
+        core::hint::spin_loop();
     }
 }
