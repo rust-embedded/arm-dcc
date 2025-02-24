@@ -10,10 +10,10 @@ keywords = ["ARM", "DCC"]
 license = "MIT OR Apache-2.0"
 name = "arm-dcc"
 repository = "https://github.com/rust-embedded/arm-dcc"
+rust-version = "1.59"
 version = "0.1.0"
 
 [features]
-inline-asm = []
 nop = []
 
 [workspace]
