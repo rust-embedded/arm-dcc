@@ -1,0 +1,150 @@
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+
+name: Build
+
+jobs:
+  # Build the workspace for a target architecture
+  build:
+    runs-on: ubuntu-24.04
+    strategy:
+      matrix:
+        rust: [stable, 1.59]
+        target:
+          - armebv7r-none-eabi
+          - armebv7r-none-eabihf
+          - armv7r-none-eabi
+          - armv7r-none-eabihf
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Install rust
+        run: |
+          rustup install ${{ matrix.rust }}
+          rustup default ${{ matrix.rust }}
+          rustup target add ${{ matrix.target }}
+      - name: Build
+        run: |
+          cargo build --target ${{ matrix.target }}
+          cargo build --target ${{ matrix.target }} --no-default-features
+          cargo build --target ${{ matrix.target }} --all-features
+
+  # Build the workspace for the target architecture but using nightly to compile libcore
+  build-tier3:
+    runs-on: ubuntu-24.04
+    strategy:
+      matrix:
+        target:
+          - armebv7r-none-eabi
+          - armebv7r-none-eabihf
+          - armv7r-none-eabi
+          - armv7r-none-eabihf
+          - armv8r-none-eabihf
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Install rust
+        run: |
+          rustup install nightly
+          rustup default nightly
+          rustup component add rust-src --toolchain nightly
+      - name: Build
+        run: |
+          cargo build --target ${{ matrix.target }} -Zbuild-std=core
+          cargo build --target ${{ matrix.target }} -Zbuild-std=core --no-default-features
+          cargo build --target ${{ matrix.target }} -Zbuild-std=core --all-features
+
+  # Gather all the above build jobs together for the purposes of getting an overall pass-fail
+  build-all:
+    runs-on: ubuntu-24.04
+    needs: [build, build-tier3]
+    steps:
+      - run: /bin/true
+
+  # Build the docs for the workspace
+  docs:
+    runs-on: ubuntu-24.04
+    strategy:
+      matrix:
+        rust: [stable, 1.59]
+        target:
+          - armebv7r-none-eabi
+          - armebv7r-none-eabihf
+          - armv7r-none-eabi
+          - armv7r-none-eabihf
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Install rust
+        run: |
+          rustup install ${{ matrix.rust }}
+          rustup default ${{ matrix.rust }}
+          rustup target add ${{ matrix.target }}
+      - name: Build docs
+        run: |
+          cargo doc --target ${{ matrix.target }}
+          cargo doc --target ${{ matrix.target }} --no-default-features
+          cargo doc --target ${{ matrix.target }} --all-features
+
+  # Format the workspace
+  fmt:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Install rust
+        run: |
+          rustup install stable
+          rustup default stable
+      - name: Format
+        run: |
+          cargo fmt --check
+
+  # Run clippy on the workpace
+  clippy:
+    runs-on: ubuntu-24.04
+    strategy:
+      matrix:
+        rust: [stable, 1.59]
+        target:
+          - armebv7r-none-eabi
+          - armebv7r-none-eabihf
+          - armv7r-none-eabi
+          - armv7r-none-eabihf
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Install rust
+        run: |
+          rustup install ${{ matrix.rust }}
+          rustup default ${{ matrix.rust }}
+          rustup target add ${{ matrix.target }}
+          rustup component add clippy
+      - name: Clippy
+        run: |
+          cargo clippy --target ${{ matrix.target }}
+          cargo clippy --target ${{ matrix.target }} --no-default-features
+          cargo clippy --target ${{ matrix.target }} --all-features
+
+  # Run the unit tests
+  unit-test:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Install rust
+        run: |
+          rustup install stable
+          rustup default stable
+      - name: Run cargo test
+        run: |
+          cargo test --workspace --exclude panic-dcc
+
+  # Gather all the above xxx-all jobs together for the purposes of getting an overall pass-fail
+  all:
+    runs-on: ubuntu-24.04
+    needs: [build-all, docs, fmt, unit-test] # not gating on clippy
+    steps:
+      - run: /bin/true
