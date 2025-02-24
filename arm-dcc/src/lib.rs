@@ -150,6 +150,7 @@ pub fn write_str(string: &str) {
     write_all(string.as_bytes())
 }
 
+#[cfg(target_arch = "arm")]
 core::arch::global_asm!(
     r#"
     // Routine for putting data in the DCC register
