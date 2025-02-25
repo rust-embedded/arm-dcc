@@ -6,6 +6,13 @@
 
 This project is developed and maintained by the [Cortex-R team][team].
 
+## Contents
+
+This repository contains two crates:
+
+* [`arm-dcc`](./arm-dcc/) - a library for sending formatted text to the Arm DCC interface
+* [`panic-dcc`](./panic-dcc/) - a library which implements a panic handler that uses `arm-dcc` to print the panic info
+
 ## Minimum Supported Rust Version (MSRV)
 
 This crate is guaranteed to compile on stable Rust 1.59 and up. It *might*
@@ -13,10 +20,7 @@ compile with older versions but that may change in any new patch release.
 
 ## License
 
-The `arm-dcc` crate is distributed under the terms of both the MIT license and
-the Apache License (Version 2.0).
-
-See [LICENSE-APACHE](LICENSE-APACHE) and [LICENSE-MIT](LICENSE-MIT) for details.
+See the individual crates for licence details.
 
 ## Code of Conduct
 
