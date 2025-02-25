@@ -1,13 +1,12 @@
 # `arm-dcc`
 
-> a panic handler that uses [`arm-dcc`] to print the panic info over an Arm [Debug Communication Channel][dcc] (DCC) interface
+> a library for sending formatted text to the Arm [Debug Communication Channel][dcc] (DCC) interface
 
-[`arm-dcc`]: https://crates.io/crates/arm-dcc
 [dcc]: https://developer.arm.com/docs/dui0471/latest/debug-communications-channel
 
 This project is developed and maintained by the [Cortex-R team][team].
 
-See the docs at <https://docs.rs/panic-dcc>
+See the docs at <https://docs.rs/arm-dcc>
 
 ## Minimum Supported Rust Version (MSRV)
 
@@ -16,7 +15,7 @@ compile with older versions but that may change in any new patch release.
 
 ## License
 
-The `panic-dcc` crate is distributed under the terms of both the MIT license and
+The `arm-dcc` crate is distributed under the terms of both the MIT license and
 the Apache License (Version 2.0).
 
 See [LICENSE-APACHE](LICENSE-APACHE) and [LICENSE-MIT](LICENSE-MIT) for details.
