@@ -2,9 +2,10 @@
 
 > [Debug Communication Channel][dcc] (DCC) API
 
-[dcc]: https://developer.arm.com/docs/dui0471/latest/debug-communications-channel
+This project is developed and maintained by the [Embedded Devices Working Group's Arm team][team].
 
-This project is developed and maintained by the [Cortex-R team][team].
+[team]: https://github.com/rust-embedded/wg#the-arm-team
+[dcc]: https://developer.arm.com/docs/dui0471/latest/debug-communications-channel
 
 ## Contents
 
@@ -25,8 +26,7 @@ See the individual crates for licence details.
 ## Code of Conduct
 
 Contribution to this crate is organized under the terms of the [Rust Code of
-Conduct][CoC], the maintainer of this crate, the [Cortex-R team][team], promises
-to intervene to uphold that code of conduct.
+Conduct][CoC], the maintainer of this crate, the [Embedded Devices Working
+Group's Arm team][team], promises to intervene to uphold that code of conduct.
 
 [CoC]: CODE_OF_CONDUCT.md
-[team]: https://github.com/rust-embedded/wg#the-cortex-r-team

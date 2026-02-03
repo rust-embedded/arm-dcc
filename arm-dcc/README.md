@@ -2,11 +2,12 @@
 
 > a library for sending formatted text to the Arm [Debug Communication Channel][dcc] (DCC) interface
 
-[dcc]: https://developer.arm.com/docs/dui0471/latest/debug-communications-channel
-
-This project is developed and maintained by the [Cortex-R team][team].
+This project is developed and maintained by the [Embedded Devices Working Group's Arm team][team].
 
 See the docs at <https://docs.rs/arm-dcc>
+
+[dcc]: https://developer.arm.com/docs/dui0471/latest/debug-communications-channel
+[team]: https://github.com/rust-embedded/wg#the-arm-team
 
 ## Minimum Supported Rust Version (MSRV)
 
