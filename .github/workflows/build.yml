@@ -13,10 +13,13 @@ jobs:
       matrix:
         rust: [stable, 1.59]
         target:
-          - armebv7r-none-eabi
-          - armebv7r-none-eabihf
           - armv7r-none-eabi
           - armv7r-none-eabihf
+          - armv8r-none-eabihf
+          - aarch64-unknown-none
+        exclude:
+        - rust: 1.59
+          target: armv8r-none-eabihf # not available in rustup for 1.59
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -42,6 +45,7 @@ jobs:
           - armv7r-none-eabi
           - armv7r-none-eabihf
           - armv8r-none-eabihf
+          - aarch64v8r-unknown-none
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -70,10 +74,13 @@ jobs:
       matrix:
         rust: [stable, 1.59]
         target:
-          - armebv7r-none-eabi
-          - armebv7r-none-eabihf
           - armv7r-none-eabi
           - armv7r-none-eabihf
+          - armv8r-none-eabihf
+          - aarch64-unknown-none
+        exclude:
+        - rust: 1.59
+          target: armv8r-none-eabihf # not available in rustup for 1.59
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -109,10 +116,13 @@ jobs:
       matrix:
         rust: [stable, 1.59]
         target:
-          - armebv7r-none-eabi
-          - armebv7r-none-eabihf
           - armv7r-none-eabi
           - armv7r-none-eabihf
+          - armv8r-none-eabihf
+          - aarch64-unknown-none
+        exclude:
+        - rust: 1.59
+          target: armv8r-none-eabihf # not available in rustup for 1.59
     steps:
       - name: Checkout
         uses: actions/checkout@v4
