@@ -108,10 +108,29 @@ impl fmt::Write for Writer {
 #[inline(always)]
 pub fn write(word: u32) {
     match () {
-        #[cfg(not(target_arch = "arm"))]
+        #[cfg(not(any(target_arch = "arm", target_arch = "aarch64")))]
         () => unimplemented!(),
-        #[cfg(all(target_arch = "arm", feature = "nop"))]
+        #[cfg(all(any(target_arch = "arm", target_arch = "aarch64"), feature = "nop"))]
         () => {}
+        // See Arm ARM for R-profile AArch64 architecture, section E4.2 DCC and ITR registers for details
+        #[cfg(all(target_arch = "aarch64", not(feature = "nop")))]
+        () => {
+            // "External Debug Status and Control Register (EDSCR) is architecturally mapped to
+            // register MDSCR_EL1"
+            const EDSCR_TXFULL: u64 = 1 << 29;
+
+            // busy wait until the TX FIFO buffer is not full
+            loop {
+                let mut edscr: u64;
+                // MDSCR = Monitor Debug System Control Register
+                unsafe { core::arch::asm!("MRS {}, MDSCR_EL1", out(reg) edscr) }
+                if edscr & EDSCR_TXFULL == 0 {
+                    break;
+                }
+            }
+            // DBGDTRTX = Debug Data Transfer Register, Transmit
+            unsafe { core::arch::asm!("MSR DBGDTRTX_EL0, {}", in(reg) word as u64) }
+        }
         #[cfg(all(target_arch = "arm", not(feature = "nop")))]
         () => {
             const W: u32 = 1 << 29;
