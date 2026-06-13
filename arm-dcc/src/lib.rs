@@ -58,6 +58,10 @@
 //!
 //! Turns `dcc::write` into a "no-operation" (not the instruction). This is useful when the DCC is
 //! disabled as `dcc::write` blocks forever in that case.
+//!
+//! ## `legacy-mode`
+//!
+//! Uses the DCC registers defined in ARMv4T (as opposed to the updated ones defined in ARMv7).
 
 #![deny(missing_docs)]
 #![no_std]
@@ -131,7 +135,11 @@ pub fn write(word: u32) {
             // DBGDTRTX = Debug Data Transfer Register, Transmit
             unsafe { core::arch::asm!("MSR DBGDTRTX_EL0, {}", in(reg) word as u64) }
         }
-        #[cfg(all(target_arch = "arm", not(feature = "nop")))]
+        #[cfg(all(
+            target_arch = "arm",
+            not(feature = "nop"),
+            not(feature = "legacy-mode")
+        ))]
         () => {
             const W: u32 = 1 << 29;
 
@@ -147,6 +155,22 @@ pub fn write(word: u32) {
                 core::arch::asm!("MCR p14, 0, {}, c0, c5, 0", in(reg) word);
             }
         }
+        #[cfg(all(target_arch = "arm", not(feature = "nop"), feature = "legacy-mode"))]
+        () => {
+            const W: u32 = 1 << 1;
+
+            unsafe {
+                let mut r: u32;
+                loop {
+                    // busy wait until we can send data
+                    core::arch::asm!("MRC p14, 0, {}, c0, c0, 0", out(reg) r);
+                    if r & W == 0 {
+                        break;
+                    }
+                }
+                core::arch::asm!("MCR p14, 0, {}, c1, c0, 0", in(reg) word);
+            }
+        }
     }
 }
 
@@ -154,6 +178,7 @@ pub fn write(word: u32) {
 ///
 /// NOTE: each byte will be word-extended before being `write`-n to the DCC
 pub fn write_all(bytes: &[u8]) {
+    // Send raw bytes
     bytes.iter().for_each(|byte| write(u32::from(*byte)))
 }
 
