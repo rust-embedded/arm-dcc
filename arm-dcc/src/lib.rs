@@ -1,6 +1,26 @@
-//! [Debug Communication Channel][dcc] (DCC) API
+//! # Debug Communication Channel (DCC) API
 //!
-//! [dcc]: https://developer.arm.com/products/software-development-tools/compilers/arm-compiler-5/docs/dui0471/latest/debug-communications-channel
+//! The Debug Communications Channel is a mechanism to get data from a *target*
+//! and into a *host*, and vice-versa. It works over a JTAG interface and so
+//! does not require a UART, or any dedicated I/O pins, and it does not stop the
+//! CPU whilst being used (unlike [semihosting]).
+//!
+//! DCC was added to the Arm Architecture Reference Manual in [ARMv7][armv7].
+//! Before that it was defined separately, usually as part of the Debug hardware
+//! in a specific ARM processor's Technical Reference Manual (like for the
+//! [ARM7TDMI][arm7tdmi]).
+//!
+//! This crate supports:
+//!
+//! * AArch64
+//! * ARMv7 AArch32
+//! * legacy ARM AArch32
+//!
+//! [semihosting]: https://crates.io/crates/semihosting
+//! [armv7]:
+//!     https://developer.arm.com/documentation/ddi0406/c/Debug-Architecture/The-Debug-Registers/Register-descriptions--in-register-order/DBGDSCR--Debug-Status-and-Control-Register?lang=en
+//! [arm7tdmi]:
+//!     https://developer.arm.com/documentation/ddi0210/c/Debug-Interface/Debug-Communications-Channel?lang=en
 //!
 //! # Example
 //!
@@ -16,8 +36,9 @@
 //!
 //! ## Host side
 //!
-//! ``` text
-//! $ # XSDB = Xilinx System Debugger
+//! ### Xilinx System Debugger
+//!
+//! ```text
 //! $ xsdb
 //!
 //! xsdb% # connect
@@ -48,6 +69,39 @@
 //! Hello, world!
 //! ```
 //!
+//! ### SEGGER J-Link
+//!
+//! Run J-Link:
+//!
+//! ```console
+//! $ JLinkExe
+//! SEGGER J-Link Commander V9.48 (Compiled Jun  3 2026 14:21:00)
+//! DLL version V9.48, compiled Jun  3 2026 14:20:18
+//!
+//! Connecting to J-Link ...O.K.
+//!
+//! Type "connect" to establish a target connection, '?' for help
+//! J-Link>device LPC2138
+//! J-Link>si JTAG
+//! J-Link>speed 1000
+//! J-Link>jtagconf -1,-1
+//! J-Link>connect
+//! J-Link>r
+//! J-Link>h
+//! J-Link>loadfile target/file.hex
+//! J-Link>go
+//! J-Link>term
+//! Please select terminal protocol:
+//! B) Binary (raw) data (Default)
+//! D) SEGGER DCC terminal
+//! Protocol>D
+//! Hello, world!
+//! ```
+//!
+//! The `term` command activates the DCC terminal. Select 'D' for a DCC
+//! terminal. We don't implement the SEGGER DCC Terminal protocol, but JLink
+//! doesn't seem to mind.
+//!
 //! # Supported Rust version
 //!
 //! - Rust >=1.59
@@ -56,12 +110,14 @@
 //!
 //! ## `nop`
 //!
-//! Turns `dcc::write` into a "no-operation" (not the instruction). This is useful when the DCC is
-//! disabled as `dcc::write` blocks forever in that case.
+//! Turns `dcc::write` into a "no-operation" (not the instruction). This is
+//! useful when the DCC is disabled as `dcc::write` blocks forever in that case.
 //!
 //! ## `legacy-mode`
 //!
-//! Uses the DCC registers defined in ARMv4T (as opposed to the updated ones defined in ARMv7).
+//! By default this crate uses the ARMv7 DCC registers (when `target_arch =
+//! "arm"`). This feature selects the debug registers for the ARM7TDMI and
+//! ARM9EJ-S instead.
 
 #![deny(missing_docs)]
 #![no_std]
@@ -128,6 +184,7 @@ pub fn write(word: u32) {
                 let mut edscr: u64;
                 // MDSCR = Monitor Debug System Control Register
                 unsafe { core::arch::asm!("MRS {}, MDSCR_EL1", out(reg) edscr) }
+                // if EDSCR_TXFULL is 0 we can proceed
                 if edscr & EDSCR_TXFULL == 0 {
                     break;
                 }
@@ -141,30 +198,35 @@ pub fn write(word: u32) {
             not(feature = "legacy-mode")
         ))]
         () => {
-            const W: u32 = 1 << 29;
+            // The DBGDSCR.TXfull bit
+            const DBGDSCR_TXFULL: u32 = 1 << 29;
 
             unsafe {
                 let mut r: u32;
+                // busy wait until we can send data
                 loop {
-                    // busy wait until we can send data
+                    // Read DBGDSCR
                     core::arch::asm!("MRC p14, 0, {}, c0, c1, 0", out(reg) r);
-                    if r & W == 0 {
+                    if r & DBGDSCR_TXFULL == 0 {
                         break;
                     }
                 }
+                // ARMv7 DBGDTRTX
                 core::arch::asm!("MCR p14, 0, {}, c0, c5, 0", in(reg) word);
             }
         }
         #[cfg(all(target_arch = "arm", not(feature = "nop"), feature = "legacy-mode"))]
         () => {
-            const W: u32 = 1 << 1;
+            const DCR_W: u32 = 1 << 1;
 
+            // busy wait until we can send data
             unsafe {
                 let mut r: u32;
                 loop {
-                    // busy wait until we can send data
+                    // Read Communications Channel Control Register
                     core::arch::asm!("MRC p14, 0, {}, c0, c0, 0", out(reg) r);
-                    if r & W == 0 {
+                    // "the processor must poll until W=0"
+                    if r & DCR_W == 0 {
                         break;
                     }
                 }
