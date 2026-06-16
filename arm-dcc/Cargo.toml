@@ -16,3 +16,6 @@ version = "0.1.1"
 
 [features]
 nop = []
+# This library defaults to using the ARMv7 DCC registers. Set this flag
+# to use the older ARMv4T compatible registers.
+legacy-mode = []
